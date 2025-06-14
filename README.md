@@ -62,8 +62,3 @@ Bash
 python generate_report.py # Replace `generate_report.py` with the actual name of your main script
 Upon successful execution, a PDF report (e.g., report.pdf, Sales_Performance_Report.pdf) will be generated in the same directory.
 
-📸 Example Output / Visual Reference
-The image WhatsApp Image 2025-06-14 at 7.34.44 AM.jpeg provides a visual reference for this task.
-
-Description: [Please describe what the image WhatsApp Image 2025-06-14 at 7.34.44 AM.jpeg specifically shows in relation to your automated report. Example: "A screenshot of the final generated PDF report, showcasing its layout, a summary table, and a section for detailed data."]
-Purpose: To illustrate the quality and format of the reports produced by this automation script.
