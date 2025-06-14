@@ -1,0 +1,108 @@
+!pip install reportlab 
+import pandas as pd
+import matplotlib.pyplot as plt
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+import os
+import pandas as pd
+# 1. Load Data
+try:
+     sample_data = {
+    'Date': ['2025-01-01', '2025-01-02', '2025-01-03'],
+    'Product': ['Widget A', 'Widget B', 'Widget C'],
+    'Sales': [100, 150, 200]
+}
+
+     df = pd.DataFrame(sample_data)
+     df.to_csv('sales.csv', index=False)
+
+
+except FileNotFoundError:
+    print("Error: sales_data.csv not found. Please create the sample data file.")
+    exit()
+
+except FileNotFoundError:
+    print("Error: sales_data.csv not found. Please create the sample data file.")
+    exit()
+total_sales = df.sum()
+product_sales = df.groupby('Product').sum().reset_index()
+print(f"\nTotal Sales: {total_sales}")
+print("\nSales by Product:")
+print(product_sales)
+sales_chart_path = 'sales_chart.png'
+plt.figure(figsize=(8, 5))
+plt.bar(product_sales['Product'], product_sales['Sales'], color='skyblue')
+plt.title('Sales by Product')
+plt.xlabel('Product')
+plt.ylabel('Total Sales')
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.savefig(sales_chart_path, dpi=300, bbox_inches='tight')
+plt.close() # Close the plot to free up memory
+print(f"\nChart saved to {sales_chart_path}")
+report_filename = "Sales_Report.pdf"
+doc = SimpleDocTemplate(report_filename, pagesize=letter)
+elements =[]
+styles = getSampleStyleSheet()
+
+# Title
+# Use a specific style from the stylesheet for the title
+elements.append(Paragraph("Automated Sales Report", styles['h1']))
+elements.append(Spacer(1, 0.2 * inch))
+total_sales_value=df['Sales'].sum()
+
+# Summary Text
+elements.append(Paragraph(f"Report Date: {pd.Timestamp.now().strftime('%Y-%m-%d')}", styles['Normal']))
+# You will also get an error here for total_sales as it's a pandas Series.
+# Access the total sales value from the Series.
+elements.append(Paragraph(f"Total Sales Across All Products: ${total_sales_value:,.2f}", styles['Normal']))
+elements.append(Spacer(1, 0.4 * inch))
+
+# Sales Data Table
+elements.append(Paragraph("Detailed Sales Data:", styles['h2']))
+elements.append(Spacer(1, 0.1 * inch))
+
+# Prepare data for ReportLab Table
+table_data = [df.columns.tolist()] + df.values.tolist()
+table_style = TableStyle()
+sales_table = Table(table_data)
+sales_table.setStyle(table_style)
+elements.append(sales_table)
+elements.append(Spacer(1, 0.4 * inch))
+
+# Sales by Product Table
+elements.append(Paragraph("Sales Summary by Product:", styles['h2']))
+elements.append(Spacer(1, 0.1 * inch))
+
+product_table_data = [product_sales.columns.tolist()] + product_sales.values.tolist()
+product_table = Table(product_table_data)
+product_table.setStyle(table_style) # Reusing the same style for simplicity
+elements.append(product_table)
+elements.append(Spacer(1, 0.4 * inch))
+
+# Embed Chart
+elements.append(Paragraph("Visual Summary: Sales by Product", styles['h2']))
+elements.append(Spacer(1, 0.1 * inch))
+try:
+    img = Image(sales_chart_path)
+    img.drawHeight = 3 * inch * img.drawHeight / img.drawWidth
+    img.drawWidth = 3 * inch
+    elements.append(img)
+except FileNotFoundError:
+    elements.append(Paragraph("Chart image not found.", styles['Normal']))
+except Exception as e:
+    elements.append(Paragraph(f"Error embedding chart: {e}", styles['Normal']))
+
+# Build the PDF
+try:
+    doc.build(elements)
+    print(f"\nReport '{report_filename}' generated successfully!")
+except Exception as e:
+    print(f"Error building PDF: {e}")
+
+# Clean up generated image
+if os.path.exists(sales_chart_path):
+    os.remove(sales_chart_path)
+    print(f"Cleaned up {sales_chart_path}")
